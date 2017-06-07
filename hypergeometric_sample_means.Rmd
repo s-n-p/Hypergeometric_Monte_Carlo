@@ -1,0 +1,129 @@
+---
+title: "Hypergeometric Monte Carlo"
+output: html_notebook
+---
+This is a Monte Carlo sampling of the hypergeometric distribution
+
+
+First load the libraries we will use
+```{r}
+library(clusterSim)
+library(ggplot2)
+library(reshape2)
+```
+
+
+Information on R's hypergeometric distribution function can be found using this command
+```{r}
+?Hypergeometric
+```
+
+
+A function to Monte Carlo sample from a hypergeometric distribution
+```{r}
+##  hg_sims simulates a draw of size @sample from a hypergeometric population of size @N @trials times
+##  for each combination of successes and failures in @N (i.e. if @N = 10 then combinations are 
+##  (0 successes, 10 failures), (1 successes, 9 failures), ..., (10 successes, 0 failures)).
+##  @N - total population size
+##  @samples - the number of samples drawn 
+##  @trials - the number of times to perform independent random draws
+##  @returns a dataframe witn N+1 columns (b/c 0 is included) and samples+1 rows (O included)
+
+hg_sims<-function(samples, N, trials){
+  df <- NULL
+  for (i in 0:N){
+    df <- cbind(df, rhyper(trials, i, N-i, samples))
+  }
+  return(as.data.frame(df))
+}
+```
+
+A helper function to aggregate the raw data from the simulations
+```{r}
+#helper function to aggregate successes 
+
+sums <- function(samples, df){
+  sums<- NULL
+  for (i in 1:(ncol(df))){
+    res <- c()
+    for (j in 0:samples){
+      res <- c(res, sum(df[ ,i] == j))
+    }
+    sums <- cbind(sums, res)
+  }
+  return(sums)
+}
+```
+Some plotting functions
+```{r}
+##  plotting function
+##  df is a dataframe of normalized aggregate successes from simulation
+pdf_plot <- function(df, N){
+  sample_size = ncol(df)-1
+  test <- df
+  test['successes'] <- 0:N
+  melted = melt(test, id.vars="successes")
+  ggplot() + 
+    geom_line(data=melted, aes(x=successes, y=value, group=variable, color = variable), size=1) +
+    labs(title=paste("Sample Size of", sample_size, " "), x =paste("Successes out of ", toString(N), sep=" "), y = "Probability") +
+    guides(color=guide_legend(title="Successes\nin Sample"))
+}
+
+##  To plot the distribution of successes in samples for a specified number of successes in the population
+ 
+draw_dist_plot <-function(successes, df, N){
+  sample_size = nrow(df) -1
+  df <- df[c(successes, 'count')]
+  melted <- melt(df, id.vars='count')
+  ggplot(data=melted, aes(x=count, y=value, fill=variable)) +
+    geom_bar(stat="identity", position=position_dodge()) +
+    labs(title=paste('Sample successes probability when true population successes are \n ', toString(successes), ' out of ', N), x=paste('Successes in sample size of ', sample_size), y='Probability Density') +
+    stat_smooth(aes(color=variable), method='auto', se = FALSE)
+  
+}
+```
+
+Run the simulations. Here we have a population of 50, sample size of 6, and 10,000 trials at each true number of successes out of 50. 
+```{r}
+## Set desired parameters for the simulation
+samples <- 6  # sample size
+N <- 50 # population size 
+trials <- 50000 # number of trials
+
+##  run the simulation
+raw_data = hg_sims(samples, N, trials)
+
+##  aggregate the data and rename the rows and cols
+aggregated_data = sums(samples, raw_data)
+colnames(aggregated_data) <- 0:N
+rownames(aggregated_data) <- 0:samples
+```
+
+Look at the aggregated data. Each row is the observed number of successes.  Each column is the true number of successes in the population. 
+```{r}
+print(aggregated_data)
+```
+
+
+
+
+Plot of each sample success distribution over true successes in population
+```{r, message=FALSE, warning=FALSE}
+##  normalize the results by successes in N to get a pdf
+agg_data_normed <- data.Normalization(aggregated_data, type = "n10", normalization = "row")
+
+##  plot the pdf's of the draw successes.  Data parameter is transposed and ensured to be a dataframe
+pdf_plot(as.data.frame(t(agg_data_normed)), N)
+```
+
+We can also plot the distribution of the sample for a specified number of true successes in the population
+```{r, message=FALSE, warning=FALSE}
+##  Plot entire sample distribution for x successes in N. Choose x (can choose more than one to compare)
+x=c(25, 30)
+##  first normalize by sample to get pmf and add successes column
+samples_normed <- as.data.frame(data.Normalization(aggregated_data, type = "n10", normalization = "col"))
+samples_normed['count'] = c(0:(nrow(samples_normed)-1))
+##  plot the distribution over successes in draws for specified successes in N
+draw_dist_plot(x, samples_normed, N)
+```
+
