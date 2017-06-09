@@ -1,6 +1,7 @@
 ---
 title: "Hypergeometric Monte Carlo"
-output: html_notebook
+# output: html_notebook
+output: rmarkdown::github_document
 ---
 This is a Monte Carlo sampling of the hypergeometric distribution
 

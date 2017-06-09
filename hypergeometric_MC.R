@@ -92,4 +92,32 @@ draw_dist_plot(x, samples_normed, N)
 
 
 
+df = as.data.frame(t(aggregated_data))
+
+# shade <-
+
+ggplot() + geom_line(data=df, aes(x=0:50, y=df[,2])) + geom_polygon(data=shade, aes())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
