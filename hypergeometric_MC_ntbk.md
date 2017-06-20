@@ -22,11 +22,11 @@ A function to Monte Carlo sample from a hypergeometric distribution
 ``` r
 ##  hg_mc - a function that monte carlo samples from a hypergeometric distribution
 ##  For each x in N, where N is the population size and x is the true number of successes in N, 
-##  this function will draw a sample of specified size (@sample) a number of times(@trials). 
+##  this function will draw a random sample of specified size (@sample) a specified number of times(@trials). 
 ##  @N - total population size
 ##  @samples - the number of samples drawn 
 ##  @trials - the number of times to perform independent random draws
-##  @returns a dataframe witn N+1 columns (b/c 0 is included) and samples+1 rows (O included)
+##  @returns a dataframe witn N+1 columns (b/c 0 is included) and @samples+1 rows (O included)
 
 hg_mc<-function(samples, N, trials){
   df <- NULL
@@ -55,7 +55,67 @@ sums <- function(samples, df){
 }
 ```
 
-Some plotting functions
+First we set the parameters we want. Here we set a population of 50, sample size of 6, and 10,000 trials.
+
+``` r
+## Set desired parameters for the simulation
+samples <- 6  # sample size
+N <- 50 # population size 
+trials <- 10000 # number of trials
+```
+
+We now run the simulation and aggregate the raw data
+
+``` r
+##  run the simulation
+raw_data = hg_mc(samples, N, trials)
+
+##  aggregate the data and rename the rows and cols
+aggregated_data = sums(samples, raw_data)
+colnames(aggregated_data) <- 0:N
+rownames(aggregated_data) <- 0:samples
+```
+
+Let's look at the aggregated data. Each row is the observed number of successes in the sample. Each column is the true number of successes in the population.
+
+``` r
+print(aggregated_data)
+```
+
+    ##       0    1    2    3    4    5    6    7    8    9   10   11   12   13
+    ## 0 10000 8752 7731 6780 5907 5180 4445 3830 3355 2814 2362 2036 1720 1474
+    ## 1     0 1248 2153 2897 3476 3733 4082 4279 4296 4257 4159 4019 3830 3557
+    ## 2     0    0  116  316  581  991 1294 1616 1917 2301 2660 2849 3014 3224
+    ## 3     0    0    0    7   36   92  168  257  399  561  712  933 1211 1425
+    ## 4     0    0    0    0    0    4   11   17   31   66  102  156  204  287
+    ## 5     0    0    0    0    0    0    0    1    2    1    5    7   21   32
+    ## 6     0    0    0    0    0    0    0    0    0    0    0    0    0    1
+    ##     14   15   16   17   18   19   20   21   22   23   24   25   26   27
+    ## 0 1203 1052  847  682  618  484  365  312  226  187  149   97   92   59
+    ## 1 3289 3117 2779 2522 2410 2029 1789 1516 1416 1207  946  840  671  586
+    ## 2 3379 3345 3473 3568 3389 3453 3260 3244 3006 2818 2555 2402 2124 1956
+    ## 3 1672 1893 2145 2289 2473 2656 2928 3006 3185 3308 3450 3329 3408 3314
+    ## 4  411  515  655  801  939 1135 1342 1525 1662 1891 2098 2368 2529 2723
+    ## 5   44   76   97  131  161  228  299  365  450  510  735  848 1049 1171
+    ## 6    2    2    4    7   10   15   17   32   55   79   67  116  127  191
+    ##     28   29   30   31   32   33   34   35   36   37   38   39   40   41
+    ## 0   44   35   29   26   13    7    2    5    2    1    0    0    0    0
+    ## 1  479  330  321  220  186  140   85   81   48   37   23   11    6    3
+    ## 2 1710 1539 1340 1144  938  818  664  515  409  271  206  154  101   69
+    ## 3 3119 3126 2861 2720 2554 2299 2167 1884 1671 1379 1182  961  757  602
+    ## 4 3001 3064 3327 3453 3486 3558 3478 3445 3376 3282 3097 2858 2574 2363
+    ## 5 1413 1606 1784 1998 2253 2483 2742 3025 3300 3588 3721 4009 4143 4117
+    ## 6  234  300  338  439  570  695  862 1045 1194 1442 1771 2007 2419 2846
+    ##     42   43   44   45   46   47   48   49    50
+    ## 0    0    0    0    0    0    0    0    0     0
+    ## 1    0    1    0    0    0    0    0    0     0
+    ## 2   36   25    7    2    1    0    0    0     0
+    ## 3  392  232  162   91   46    8    0    0     0
+    ## 4 1930 1609 1383  919  623  354  112    0     0
+    ## 5 4375 4312 4099 3823 3458 2893 2167 1208     0
+    ## 6 3267 3821 4349 5165 5872 6745 7721 8792 10000
+
+Let's create some plots to help visualize the data First we write a function to plot the the distribution of the observed successes in a sample over the true number of successes in the population.
 
 ``` r
 ##  plotting function
@@ -67,81 +127,12 @@ pdf_plot <- function(df, N){
   melted = melt(test, id.vars="successes")
   ggplot() + 
     geom_line(data=melted, aes(x=successes, y=value, group=variable, color = variable), size=1) +
-    labs(title=paste("Sample Size of", sample_size, " "), x =paste("Successes out of ", toString(N), sep=" "), y = "Probability") +
+    labs(title=paste("Sample Size of", sample_size, " "), x =paste("True number of successes in population size ", toString(N), sep=" "), y = "Probability density") +
     guides(color=guide_legend(title="Successes\nin Sample"))
 }
-
-##  To plot the distribution of successes in samples for a specified number of successes in the population
- 
-draw_dist_plot <-function(successes, df, N){
-  sample_size = nrow(df) -1
-  df <- df[c(successes, 'count')]
-  melted <- melt(df, id.vars='count')
-  ggplot(data=melted, aes(x=count, y=value, fill=variable)) +
-    geom_bar(stat="identity", position=position_dodge()) +
-    labs(title=paste('Probability of successes in sample when true population successes are \n ', toString(successes), ' out of ', N), x=paste('Successes in sample size of ', sample_size), y='Probability Density') +
-    stat_smooth(aes(color=variable), method='auto', se = FALSE)
-  
-}
 ```
 
-Run the simulations. Here we have a population of 50, sample size of 6, and 10,000 trials.
-
-``` r
-## Set desired parameters for the simulation
-samples <- 6  # sample size
-N <- 50 # population size 
-trials <- 10000 # number of trials
-
-##  run the simulation
-raw_data = hg_mc(samples, N, trials)
-
-##  aggregate the data and rename the rows and cols
-aggregated_data = sums(samples, raw_data)
-colnames(aggregated_data) <- 0:N
-rownames(aggregated_data) <- 0:samples
-```
-
-Look at the aggregated data. Each row is the observed number of successes. Each column is the true number of successes in the population.
-
-``` r
-print(aggregated_data)
-```
-
-    ##       0    1    2    3    4    5    6    7    8    9   10   11   12   13
-    ## 0 10000 8856 7702 6757 5846 5195 4466 3823 3359 2965 2396 2034 1741 1498
-    ## 1     0 1144 2167 2873 3473 3805 4072 4274 4177 4153 4094 4045 3761 3530
-    ## 2     0    0  131  362  639  910 1281 1644 2025 2241 2616 2867 3048 3239
-    ## 3     0    0    0    8   42   86  170  238  398  559  807  883 1220 1382
-    ## 4     0    0    0    0    0    4   11   20   37   76   83  159  215  325
-    ## 5     0    0    0    0    0    0    0    1    4    5    4   12   14   26
-    ## 6     0    0    0    0    0    0    0    0    0    1    0    0    1    0
-    ##     14   15   16   17   18   19   20   21   22   23   24   25   26   27
-    ## 0 1174 1100  857  692  569  485  368  299  237  163  136  115   83   66
-    ## 1 3340 3006 2788 2559 2270 2003 1683 1533 1405 1158  985  845  668  577
-    ## 2 3430 3454 3529 3490 3456 3420 3389 3207 2948 2769 2570 2336 2138 1944
-    ## 3 1634 1868 2105 2347 2562 2765 2932 3034 3170 3252 3289 3357 3380 3246
-    ## 4  385  500  628  766  950 1117 1302 1535 1728 2012 2217 2389 2601 2870
-    ## 5   36   69   89  139  183  199  306  365  463  571  711  831  986 1128
-    ## 6    1    3    4    7   10   11   20   27   49   75   92  127  144  169
-    ##     28   29   30   31   32   33   34   35   36   37   38   39   40   41
-    ## 0   48   39   14   15    8    9    4    5    1    1    0    0    0    0
-    ## 1  457  384  321  233  174  121   86   69   40   44   19   11    5    2
-    ## 2 1809 1491 1312 1121  977  764  604  508  411  300  239  162   97   56
-    ## 3 3159 3060 2867 2801 2517 2384 2089 1895 1684 1385 1219  985  758  604
-    ## 4 2928 3135 3364 3406 3449 3513 3488 3413 3346 3271 3090 2846 2656 2294
-    ## 5 1379 1586 1745 1987 2342 2515 2850 3089 3290 3577 3746 3942 4043 4220
-    ## 6  220  305  377  437  533  694  879 1021 1228 1422 1687 2054 2441 2824
-    ##     42   43   44   45   46   47   48   49    50
-    ## 0    0    0    0    0    0    0    0    0     0
-    ## 1    4    0    0    0    0    0    0    0     0
-    ## 2   44   17    8    1    2    0    0    0     0
-    ## 3  418  264  164  107   35    9    0    0     0
-    ## 4 1932 1623 1313  899  628  389  105    0     0
-    ## 5 4271 4300 4054 3840 3391 2874 2227 1149     0
-    ## 6 3331 3796 4461 5153 5944 6728 7668 8851 10000
-
-Plot of each sample success distribution over true successes in population
+Call the plotting function
 
 ``` r
 ##  normalize the results by successes in N to get a pdf
@@ -151,18 +142,67 @@ agg_data_normed <- data.Normalization(aggregated_data, type = "n10", normalizati
 pdf_plot(as.data.frame(t(agg_data_normed)), N)
 ```
 
-![](hypergeometric_MC_ntbk_files/figure-markdown_github/unnamed-chunk-8-1.png)
+![](hypergeometric_MC_ntbk_files/figure-markdown_github/unnamed-chunk-9-1.png) This next plotting function is to examine the distribution of sample successes for a specific number of successes in the population. Multiple population successes are allowed for comparison.
 
-We can also plot the distribution of the sample for a specified number of true successes in the population
+``` r
+##  To plot the distribution of successes in samples for a specified number of successes in the population
+##  @successes - the number of successes in the population
+##  @df - a data frame containing the data
+##  @N - the population size
+ 
+draw_dist_plot <-function(successes, df, N){
+  sample_size = nrow(df) -1
+  df <- df[c(successes, 'count')]
+  melted <- melt(df, id.vars='count')
+  ggplot(data=melted, aes(x=count, y=value, fill=variable)) +
+    geom_bar(stat="identity", position=position_dodge()) +
+    labs(title=paste('Probability of successes in sample when true population successes are \n ', toString(successes), ' out of ', N), x=paste('Successes in sample size of ', sample_size), y='Probability Density') +
+    stat_smooth(aes(color=variable), method='auto', se = FALSE)
+}
+```
+
+We first set the population successes that we want to look at. Here we choose 20 and 30.
 
 ``` r
 ##  Plot entire sample distribution for x successes in N. Choose x (can choose more than one to compare)
-x=c(25, 30)
+successes=c(20, 30)
+```
+
+We normalize the data and call the plotting function
+
+``` r
 ##  first normalize by sample to get pmf and add successes column
 samples_normed <- as.data.frame(data.Normalization(aggregated_data, type = "n10", normalization = "col"))
 samples_normed['count'] = c(0:(nrow(samples_normed)-1))
 ##  plot the distribution over successes in draws for specified successes in N
-draw_dist_plot(x, samples_normed, N)
+draw_dist_plot(successes, samples_normed, N)
 ```
 
-![](hypergeometric_MC_ntbk_files/figure-markdown_github/unnamed-chunk-9-1.png)
+![](hypergeometric_MC_ntbk_files/figure-markdown_github/unnamed-chunk-12-1.png) If we want to examine a specific number of successes in a sample and find the likelihood of the true number of population successes we can plot the sample and sum the area under the curve. This function does that for the right tail of the distribution.
+
+``` r
+right_tail_plot <- function(df, sample_successes, pop_successes){
+  sample_successes <- sample_successes +1
+  df1 <- as.data.frame(t(df))
+  df1['successes'] <- c(0:(nrow(df1)-1))
+  shade <- df1[(pop_successes+1):nrow(df1),]
+  prob <- 100* sum(shade[,sample_successes])
+  ggplot(data=df1, aes(x=successes)) + geom_line(aes(y=df1[,sample_successes]), color='blue') + 
+    geom_area(data=shade, aes(x=pop_successes:(nrow(df1)-1), y=shade[,sample_successes]), fill='blue') +
+    labs(title=paste('Curve: ', sample_successes-1,' successes in sample of', toString(nrow(df)-1), '\nShaded Area: P[True Population Successes > ',
+                     pop_successes, '] = ', prob, '%'), x='Successes in population', 
+         y='Probability')
+}
+```
+
+We then call the function based on the parameters we want to see. Here we are looking at 4 successes in the sample size of 6 where we want to know the probability that the true number of successes in the population is greater than 25
+
+``` r
+##  parameters for plotting function
+sample_successes <- 4 # number of successes in sample
+pop_successes <- 25 # probability that true population successes are greater than this when observing sample_successes
+
+right_tail_plot(agg_data_normed, sample_successes, pop_successes)
+```
+
+![](hypergeometric_MC_ntbk_files/figure-markdown_github/unnamed-chunk-14-1.png)
