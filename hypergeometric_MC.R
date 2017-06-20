@@ -64,7 +64,7 @@ draw_dist_plot <-function(successes, df, N){
 ## Set desired parameters
 samples <- 6
 N <- 50
-trials <- 10000
+trials <- 50000
 
 ##  run the simulation
 raw_data = hg_sims(samples, N, trials)
@@ -82,7 +82,7 @@ pdf_plot(as.data.frame(t(agg_data_normed)), N)
 
 
 ##  Plot entire draw for x successes in N
-x=c(20, 30)
+x=c(25)
 ##  first normalize by sample to get pmf and add successes column
 samples_normed <- as.data.frame(data.Normalization(aggregated_data, type = "n10", normalization = "col"))
 samples_normed['count'] = c(0:(nrow(samples_normed)-1))
@@ -92,32 +92,29 @@ draw_dist_plot(x, samples_normed, N)
 
 
 
-df = as.data.frame(t(aggregated_data))
+right_tail_plot <- function(df, sample_successes, pop_successes){
+  sample_successes <- sample_successes +1
+  df1 <- as.data.frame(t(df))
+  df1['successes'] <- c(0:(nrow(df1)-1))
+  shade <- df1[(pop_successes+1):nrow(df1),]
+  print(sum(shade[,sample_successes]))
+  ggplot(data=df1, aes(x=successes)) + geom_line(aes(y=df1[,sample_successes]), color='blue') + 
+    geom_area(data=shade, aes(x=pop_successes:(nrow(df1)-1), y=shade[,sample_successes]), fill='blue') +
+    labs(title=paste(sample_successes,' successes in sample of', toString(nrow(df)-1)), x='Successes in population', 
+         y='Probability')
+}
 
-# shade <-
+sample_successes <- 3
+pop_successes <- 25
 
-ggplot() + geom_line(data=df, aes(x=0:50, y=df[,2])) + geom_polygon(data=shade, aes())
+right_tail_plot(agg_data_normed, sample_successes, pop_successes)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+?Hypergeometric
+for (i in c(0:6)){
+  print(i)
+  print(dhyper(i, 25, 25, 6))
+}
+for (i in c(0:6)){
+  print(i)
+  print(phyper(i, 25, 25, 6))
+}
