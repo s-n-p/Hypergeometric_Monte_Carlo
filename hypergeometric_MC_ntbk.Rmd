@@ -96,6 +96,7 @@ agg_data_normed <- data.Normalization(aggregated_data, type = "n10", normalizati
 ##  plot the pdf's of the draw successes.  Data parameter is transposed and ensured to be a dataframe
 pdf_plot(as.data.frame(t(agg_data_normed)), N)
 ```
+
 This next plotting function is to examine the distribution of sample successes for a specific number of successes in the population.  Multiple population successes are allowed for comparison. 
 ```{r}
 ##  To plot the distribution of successes in samples for a specified number of successes in the population
