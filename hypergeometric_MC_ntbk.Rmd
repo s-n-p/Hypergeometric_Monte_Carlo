@@ -54,7 +54,7 @@ First we set the parameters we want.
 Here we set a population of 50, sample size of 6, and 10,000 trials. 
 ```{r}
 ## Set desired parameters for the simulation
-samples <- 4  # sample size
+samples <- 6  # sample size
 N <- 50 # population size 
 trials <- 10000 # number of trials
 ```
@@ -144,10 +144,10 @@ right_tail_plot <- function(df, sample_successes, pop_successes){
          y='Probability')
 }
 ```
-We then call the function based on the parameters we want to see.  Here we are looking at 4 successes in the sample size of 6 where we want to know the probability that the true number of successes in the population is greater than 25
+We then call the function based on the parameters we want to see.  Here we are looking at 4 successes in the sample size of 6 where we want to know the probability that the true number of successes in the population is greater than 25.  For a sample size or 6 with 4 successes, the probability that the true number of successes in the population of 50 is greater than 25 is roughly 80.8%
 ```{r}
 ##  parameters for plotting function
-sample_successes <- 1 # number of successes in sample
+sample_successes <- 4 # number of successes in sample
 pop_successes <- 25 # probability that true population successes are greater than this when observing sample_successes
 
 right_tail_plot(agg_data_normed, sample_successes, pop_successes)
