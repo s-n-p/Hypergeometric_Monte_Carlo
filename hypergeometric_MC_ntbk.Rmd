@@ -118,7 +118,7 @@ draw_dist_plot <-function(successes, df, N){
 
 We first set the population successes that we want to look at.  Here we choose 20 and 30.  
 ```{r, message=FALSE, warning=FALSE}
-##  Plot entire sample distribution for x successes in N. Choose x (can choose more than one to compare)
+##  Plot entire sample distribution for successes in N.
 successes=c(20, 30)
 ```
 We normalize the data and call the plotting function
