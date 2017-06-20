@@ -4,9 +4,9 @@ library(ggplot2)
 library(reshape2)
 
 ##  Information on R's hypergeometric functions
-#?Hypergeometric
+?Hypergeometric
 
-#helper function to aggregate successes 
+##  helper function to aggregate successes 
 sums <- function(samples, df){
   sums<- NULL
   for (i in 1:(ncol(df))){
@@ -18,7 +18,6 @@ sums <- function(samples, df){
   }
   return(sums)
 }
-
 
 ##  hg_sims simulates a draw of size @sample from a hypergeometric population of size @N @trials times
 ##  for each combination of successes and failures in @N (i.e. if @N = 10 then combinations are 
@@ -34,7 +33,6 @@ hg_sims<-function(samples, N, trials){
   }
   return(as.data.frame(df))
 }
-
 
 ##  plotting function
 ##  df is a dataframe of normalized aggregate successes from simulation
@@ -58,7 +56,6 @@ draw_dist_plot <-function(successes, df, N){
     geom_bar(stat="identity", position=position_dodge()) +
     labs(title=paste(toString(successes), ' successes out of ', N), x='Successes in sample', y='Density') +
     stat_smooth(aes(color=variable), method='auto', se = FALSE)
-  
 }
 
 ## Set desired parameters
@@ -81,17 +78,19 @@ agg_data_normed <- data.Normalization(aggregated_data, type = "n10", normalizati
 pdf_plot(as.data.frame(t(agg_data_normed)), N)
 
 
-##  Plot entire draw for x successes in N
-x=c(25)
+##  Plot entire draw for successes in N.  Change this to see a different number of 
+successes <- c(25)
+
 ##  first normalize by sample to get pmf and add successes column
 samples_normed <- as.data.frame(data.Normalization(aggregated_data, type = "n10", normalization = "col"))
 samples_normed['count'] = c(0:(nrow(samples_normed)-1))
+
 ##  plot the distribution over successes in draws for specified successes in N
-draw_dist_plot(x, samples_normed, N)
-##  print probability successes out of N greater then specified # of successes (i.e. prob )
+draw_dist_plot(successes, samples_normed, N)
 
 
-
+##  Plotting function that gives the probability that true number of successes in a population 
+##  is greater than a specified number for a given number of successes in a sample.
 right_tail_plot <- function(df, sample_successes, pop_successes){
   sample_successes <- sample_successes +1
   df1 <- as.data.frame(t(df))
@@ -105,6 +104,7 @@ right_tail_plot <- function(df, sample_successes, pop_successes){
          y='Probability')
 }
 
+##  change these to see different plots
 sample_successes <- 5
 pop_successes <- 25
 
