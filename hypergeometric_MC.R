@@ -97,24 +97,15 @@ right_tail_plot <- function(df, sample_successes, pop_successes){
   df1 <- as.data.frame(t(df))
   df1['successes'] <- c(0:(nrow(df1)-1))
   shade <- df1[(pop_successes+1):nrow(df1),]
-  print(sum(shade[,sample_successes]))
+  prob <- 100* sum(shade[,sample_successes])
   ggplot(data=df1, aes(x=successes)) + geom_line(aes(y=df1[,sample_successes]), color='blue') + 
     geom_area(data=shade, aes(x=pop_successes:(nrow(df1)-1), y=shade[,sample_successes]), fill='blue') +
-    labs(title=paste(sample_successes,' successes in sample of', toString(nrow(df)-1)), x='Successes in population', 
+    labs(title=paste('Curve: ', sample_successes-1,' successes in sample of', toString(nrow(df)-1), '\nShaded Area: P[True Population Successes > ',
+                     pop_successes, '] = ', prob, '%'), x='Successes in population', 
          y='Probability')
 }
 
-sample_successes <- 3
+sample_successes <- 5
 pop_successes <- 25
 
 right_tail_plot(agg_data_normed, sample_successes, pop_successes)
-
-?Hypergeometric
-for (i in c(0:6)){
-  print(i)
-  print(dhyper(i, 25, 25, 6))
-}
-for (i in c(0:6)){
-  print(i)
-  print(phyper(i, 25, 25, 6))
-}
