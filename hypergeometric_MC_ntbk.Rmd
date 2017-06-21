@@ -129,6 +129,7 @@ samples_normed['count'] = c(0:(nrow(samples_normed)-1))
 ##  plot the distribution over successes in draws for specified successes in N
 draw_dist_plot(successes, samples_normed, N)
 ```
+
 If we want to examine a specific number of successes in a sample and find the likelihood of the true number of population successes we can plot the sample and sum the area under the curve. This function does that for the right tail of the distribution. 
 ```{r}
 right_tail_plot <- function(df, sample_successes, pop_successes){
