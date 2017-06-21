@@ -9,3 +9,5 @@ small sample size. Pulling samples from this population was expensive and a roug
 in a sample size of 6, which was not helpful.  These visualisations help provide an intuitive understanding of the true number of successes 
 in a population. 
 
+A R markdown file can be viewed with all graphs in hypergeometric_MC_ntbk.md.
+The regular R code is located in hypergeometric_MC.R
