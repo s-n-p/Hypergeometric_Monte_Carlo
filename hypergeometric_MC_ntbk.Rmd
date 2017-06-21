@@ -144,7 +144,7 @@ right_tail_plot <- function(df, sample_successes, pop_successes){
          y='Probability')
 }
 ```
-We then call the function based on the parameters we want to see.  Here we are looking at 4 successes in the sample size of 6 where we want to know the probability that the true number of successes in the population is greater than 25.  For a sample size or 6 with 4 successes, the probability that the true number of successes in the population of 50 is greater than 25 is roughly 80.8%
+We then call the function based on the parameters we want to see.  Here we are looking at 4 successes in the sample size of 6 where we want to know the probability that the true number of successes in the population is greater than 25.  For a sample size or 6 with 4 successes, the probability that the true number of successes in the population of 50 is greater than 25 is roughly 80%
 ```{r}
 ##  parameters for plotting function
 sample_successes <- 4 # number of successes in sample
